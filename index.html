@@ -100,8 +100,8 @@ const D=[
 
 const $=(t,p={},...c)=>{const e=document.createElement(t);Object.assign(e,p);e.append(...c);return e};
 const dv=b=>{let s=0,m=2;for(const c of[...b].reverse()){s+=c*m;m=m==7?2:m+1}const r=11-s%11;return r==11?"0":r==10?"K":""+r};
-const fmt=v=>{const c=v.replace(/[.\-\s]/g,"").toUpperCase();if(!/^\d{6,8}[\dK]$/.test(c)||dv(c.slice(0,-1))!=c.slice(-1))return null;return c.slice(0,-1).replace(/\B(?=(\d{3})+$)/g,".")+"-"+c.slice(-1)};
-const rm=v=>{const c=v.replace(/[.\-\s]/g,"").toUpperCase();if(c.length<7)return"RUN incompleto";if(!/^\d{6,8}[\dK]$/.test(c))return"RUN inválido. Ejemplo: 12.345.678-9";const b=c.slice(0,-1),d=dv(b);return d==c.slice(-1)?"":"El dígito verificador no coincide: para "+b.replace(/\B(?=(\d{3})+$)/g,".")+" debería ser "+d};
+const fmt=v=>{const c=v.replace(/[.\-\s]/g,"").toUpperCase();if(!/^\d{6,9}[\dK]$/.test(c)||(c.length<10&&dv(c.slice(0,-1))!=c.slice(-1)))return null;return c.slice(0,-1).replace(/\B(?=(\d{3})+$)/g,".")+"-"+c.slice(-1)};
+const rm=v=>{const c=v.replace(/[.\-\s]/g,"").toUpperCase();if(c.length<7)return"RUN incompleto";if(!/^\d{6,9}[\dK]$/.test(c))return"RUN inválido. Ejemplo: 12.345.678-9";if(c.length==10)return"";const b=c.slice(0,-1),d=dv(b);return d==c.slice(-1)?"":"El dígito verificador no coincide: para "+b.replace(/\B(?=(\d{3})+$)/g,".")+" debería ser "+d};
 const app=document.getElementById("app"),bar=document.getElementById("bar"),lab=document.getElementById("lab"),nav=document.getElementById("nav");
 document.getElementById("y").textContent=Y;
 let cur=0;
@@ -128,7 +128,7 @@ const secs=D.map((d,i)=>{
    else if(t=="c"){el=$("div",{id,className:"opts"});o.forEach(x=>el.append($("label",{},$("input",{type:"checkbox",value:x})," "+x)))}
    else el=$("input",{id,type:t=="e"?"email":t=="n"?"tel":t=="d"?"date":"text",autocomplete:"off"});
    w.append(el);
-   if(t=="run"){el.placeholder="12.345.678-9";if(d.norun){nr=$("input",{type:"checkbox"});nr.onchange=()=>{el.disabled=nr.checked;if(nr.checked){el.value="";w.classList.remove("bad");w.querySelector(".e").textContent=""}};w.append($("label",{className:"chk",style:"margin:6px 0 0"},nr," No poseo el RUN de esta persona"))}}
+   if(t=="run"){el.placeholder="12.345.678-9";if(d.norun){nr=$("input",{type:"checkbox"});nr.onchange=()=>{el.disabled=nr.checked;if(nr.checked){el.value="";w.classList.remove("bad");w.querySelector(".e").textContent=""}};w.append($("label",{className:"chk",style:"margin:6px 0 0"},nr," No poseo el RUN de esta persona"))}w.append($("div",{className:"hint",textContent:"Si es extranjero/a sin RUN chileno, escriba su IPA/IPE (ej. 200.123.456-7) o su pasaporte."}))}
    if(fl.includes("O")){oth=$("input",{type:"text",placeholder:"Especifique",hidden:true});oth.style.marginTop="6px";w.append(oth)}
   }
   w.append($("div",{className:"e"}));
@@ -139,11 +139,11 @@ const secs=D.map((d,i)=>{
   if(t=="run"){
    el.oninput=()=>{const v=el.value,e=w.querySelector(".e");if(/^\s*[a-z]/i.test(v)){e.textContent="";return}
     const pos=el.selectionStart??v.length,before=v.slice(0,pos).replace(/[^0-9kK]/g,"").length;
-    const c=v.replace(/[^0-9kK]/g,"").toUpperCase().replace(/K(?=[0-9K])/g,"").slice(0,9);
+    const c=v.replace(/[^0-9kK]/g,"").toUpperCase().replace(/K(?=[0-9K])/g,"").slice(0,10);
     const o=c.length>1?c.slice(0,-1).replace(/\B(?=(\d{3})+$)/g,".")+"-"+c.slice(-1):c;
     el.value=o;let i=o.length;if(before<c.length){let n=0;for(i=0;i<o.length&&n<before;i++)if(/[0-9K]/.test(o[i]))n++}
     try{el.setSelectionRange(i,i)}catch(x){}
-    e.textContent=c.length>=9?rm(o):"";
+    e.textContent="";
     if(e.textContent)w.classList.add("bad");else w.classList.remove("bad")};
    el.onblur=()=>{const v=el.value.trim(),e=w.querySelector(".e");if(!v||/^[a-z]/i.test(v))return;const r=fmt(v);if(r)el.value=r;const m=rm(v);e.textContent=m;w.classList.toggle("bad",!!m)}}
   F.push(f);body.append(w);
